@@ -5,9 +5,10 @@ docov
 Light-weight, recursive docstring coverage analysis for python modules.
 """
 
-from . docov import analyze as _analyze
-from . docov import create_badge as _create_badge
-from . docov import create_report as _create_report
+from . docov import *
+from . docov import *
+from . docov import *
+del docov
 
 class _submodules:
     import argparse
@@ -33,17 +34,24 @@ Generates a badge and a report if not specified otherwise.
     return parser.parse_args()
 
 
-def main():
-    args = parse_args()
+def main(args = None):
+    """
+        Command line utility main function.
+
+        Parameters:
+            args: command line arguments as returned from argparse.parse_args()
+    """
+    if args is None:
+        args = parse_args()
 
     module = _submodules.importlib.import_module(args.module)
-    result = _analyze(module, depth = args.depth)
+    result = analyze(module, depth = args.depth)
 
     if not args.no_badge:
-        _create_badge(*result, output = args.output)
+        create_badge(*result, output = args.output)
 
     if not args.no_report:
-        _create_report(*result, output = args.output)
+        create_report(*result, output = args.output)
 
 
 if __name__ == "__main__":

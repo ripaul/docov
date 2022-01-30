@@ -1,6 +1,15 @@
+"""
+docov
+
+Light-weight, recursive docstring coverage analysis for python modules.
+"""
+
 class _submodules:
     import anybadge
     import inspect
+    import builtins
+
+builtin_types = [getattr(_submodules.builtins, d) for d in dir(_submodules.builtins) if isinstance(getattr(_submodules.builtins, d), type)]
 
 
 def fetch(module, depth = 3, ignore_hidden = True, ignore = set()):
@@ -29,21 +38,17 @@ def fetch(module, depth = 3, ignore_hidden = True, ignore = set()):
         item = items[i][HANDLE]
         name = items[i][NAME]
 
-        if name in ignore:
-            i += 1
-            continue
+        if not ( \
+                name in ignore or \
+                name.count('.') >= depth or \
+                type(item) in builtin_types):
+            _items = [_item for _item in _submodules.inspect.getmembers(item) if not ignore_hidden or not _item[NAME].startswith('_') and not id(_item[HANDLE]) in seen]
 
-        if name.count('.') >= depth:
-            i += 1
-            continue
+            for j in range(len(_items)):
+                seen.add(id(items[i][HANDLE]))
+                _items[j] = (name + "." + _items[j][NAME], _items[j][HANDLE])
 
-        _items = [_item for _item in _submodules.inspect.getmembers(item) if not ignore_hidden or not _item[NAME].startswith('_') and not id(_item[HANDLE]) in seen]
-
-        for j in range(len(_items)):
-            seen.add(id(items[i][HANDLE]))
-            _items[j] = (name + "." + _items[j][NAME], _items[j][HANDLE])
-
-        items += _items
+            items += _items
 
         i += 1
 
