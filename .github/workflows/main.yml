@@ -15,7 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install docov locally
-        run: |
-          python3 -m pip install .
-          docov docov
+      - name: Install docov from repo
+        run: python3 -m pip install .
+        
+      - name: Analyze docstring coverage of docov
+        run: docov docov
+        
+      - name: Print docov report
+        run: cat docov.txt
