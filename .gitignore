@@ -1,5 +1,7 @@
 .*.sw*
 .sw*
+docov.svg
+docov.txt
 __pycache__
 src/*.egg-info
 build/
