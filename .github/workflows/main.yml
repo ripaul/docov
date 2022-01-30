@@ -17,5 +17,5 @@ jobs:
 
       - name: Install docov locally
         run: |
-          python3 install .
+          python3 -m pip install .
           docov docov
