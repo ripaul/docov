@@ -19,7 +19,13 @@ jobs:
         run: python3 -m pip install .
         
       - name: Analyze docstring coverage of docov
-        run: docov docov
-        
+        run: docov docov --output .github/
       - name: Print docov report
-        run: cat docov.txt
+        run: cat .github/docov.txt
+
+      - name: Archive docstring coverage results
+        uses: actions/upload-artifact@v2
+        with:
+          name: docov-results
+          path: .github/
+        
