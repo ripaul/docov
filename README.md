@@ -10,7 +10,7 @@ symbols have docstrings and if they are longer than at least 20 symbols.
 
 ## Installation
 
-`docov` is available via [PyPI]():
+`docov` is available via [PyPI](https://pypi.org/project/docov/):
 ```
 $ pip install docov
 ```
