@@ -31,7 +31,7 @@ setup(
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
     python_requires='>=3.6, <4',
-    install_requires=['anybadge'],
+    install_requires=['anybadge', 'argparse'],
     entry_points={
         'console_scripts': [
             'docov=docov:main',
