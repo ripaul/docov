@@ -114,7 +114,8 @@ def create_report(sufficient_items, insufficient_items, condition, output = ".",
     for name in sorted(names):
         text += "  -- " + name + "\n"
 
-    coverage = 100 * round(1. * len(sufficient_items) / n_all, 3)
+    coverage = int(1000 * round(len(sufficient_items) / n_all, 3)) / 10.
+
     text += "Found " + str(n_all) + " items of which " + str(len(sufficient_items)) + " have suffcient "
     text += condition.target + ".\n"
     text += "Coverage: " + str(coverage) + condition.unit + "\n"
@@ -137,7 +138,7 @@ def create_badge(sufficient_items, insufficient_items, condition, output = ".", 
     """
     n_all = len(sufficient_items) + len(insufficient_items)
 
-    coverage = 100 * round(len(sufficient_items) / n_all, 3)
+    coverage = int(1000 * round(len(sufficient_items) / n_all, 3)) / 10.
 
     thresholds = condition.thresholds if thresholds is None else condition.thresholds
     badge = _submodules.anybadge.Badge(condition.name, coverage, value_suffix=condition.unit, thresholds=thresholds)
