@@ -1,6 +1,6 @@
 # docov
 
-![docov](https://github.com/ripaul/docov/actions/workflows/main.yml/docov.svg)
+[![docov](https://ripaul.github.io/docov/docov.svg)](https://ripaul.github.io/docov/docov.txt)
 
 Light-weight, recursive docstring coverage analysis for python modules. 
 
