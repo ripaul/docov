@@ -8,11 +8,47 @@ class _submodules:
     import anybadge
     import inspect
     import builtins
+    import importlib
+
+#from pprint import pprint as _pprint
 
 builtin_types = [getattr(_submodules.builtins, d) for d in dir(_submodules.builtins) if isinstance(getattr(_submodules.builtins, d), type)]
 
 
-def fetch(module, depth = 3, ignore_hidden = True, ignore = set()):
+def is_module(item):
+    """
+        Checks if the passed item can be imported as a module.
+    """
+    try:
+        _submodules.importlib.import_module(item)
+        return True
+    except:
+        return False
+
+
+def collect_ignores(items):
+    """
+        Collect items that are supposed to be ignored. This consists of symbols, types and modules.
+
+        Parameters:
+            items: A list of items which are supposed to be ignored.
+    """
+    ignored_types = builtin_types
+    ignored_modules = set()
+    ignored_symbols = set()
+    for item in items:
+        if is_module(item):
+            ignored_modules.add(item)
+            module = _submodules.importlib.import_module(item)
+            ignored_types += set([getattr(module, d) for d in dir(module) if isinstance(getattr(module, d), type)])
+        else:
+            ignored_symbols.add(item)
+
+    return set(ignored_types), ignored_modules, ignored_symbols
+
+
+
+def fetch(module, depth = 3, ignore_hidden = True, ignore = []):
     """
         Fetch symbols from module by recursively inspecting its members.
 
@@ -22,27 +58,42 @@ def fetch(module, depth = 3, ignore_hidden = True, ignore = set()):
             ignore_hidden:  Ignore members starting with underscores
             ignore:         Set of members (identified by strings) which are to be ignored
     """
+
     NAME = 0
     HANDLE = 1
 
+    ignored_types, ignored_modules, ignored_symbols = collect_ignores(ignore)
     seen = set()
 
-    items = [item for item in _submodules.inspect.getmembers(module) if not ignore_hidden or not item[NAME].startswith('_')]
+    def skip_analysis(name, item):
+        try:
+            return (ignore_hidden and name.startswith('_')) or id(item) in seen or name.split('.')[-1] in ignored_symbols or name in ignored_symbols
+        except:
+            return False
+
+    def skip_recursion(name, item):
+        try:
+            return (name in ignored_symbols or \
+                 name.split('.')[-1] in ignored_symbols or \
+                 name.count('.') >= depth or \
+                 name.split('.')[0] in ignored_modules or \
+                 type(item) in ignored_types or \
+                 item in ignored_types)
+        except:
+            return False
+
+    items = [(module.__name__ + "." + item[NAME], item[HANDLE]) for item in _submodules.inspect.getmembers(module) if not skip_analysis(*item)]
 
     for i in range(len(items)):
         seen.add(id(items[i][HANDLE]))
-        items[i] = (module.__name__ + "." + items[i][NAME], items[i][HANDLE])
 
     i = 0
     while i < len(items):
         item = items[i][HANDLE]
         name = items[i][NAME]
 
-        if not ( \
-                name in ignore or \
-                name.count('.') >= depth or \
-                type(item) in builtin_types):
-            _items = [_item for _item in _submodules.inspect.getmembers(item) if not ignore_hidden or not _item[NAME].startswith('_') and not id(_item[HANDLE]) in seen]
+        if not skip_recursion(name, item):
+            _items = [_item for _item in _submodules.inspect.getmembers(item) if not skip_analysis(*_item)]
 
             for j in range(len(_items)):
                 seen.add(id(items[i][HANDLE]))
@@ -99,7 +150,7 @@ def analyze(module, condition = SufficientDocstring(), **kwargs):
     return sufficient_items, insufficient_items, condition
 
 
-def create_report(sufficient_items, insufficient_items, condition, output = ".", **kwargs):
+def create_report(sufficient_items, insufficient_items, condition, output = ".", prefix = None, **kwargs):
     """
         Report the symbols which did not pass the condition.
 
@@ -111,6 +162,9 @@ def create_report(sufficient_items, insufficient_items, condition, output = ".",
             kwargs:             Key-word arguments for underlying function calls (e.g. docov.analyze)
     """
     n_all = len(sufficient_items) + len(insufficient_items)
+
+    if n_all == 0:
+        raise RuntimeError("No items were analyzed!")
 
     text = "Found insufficient " + condition.target + " for the following items:\n"
 
@@ -125,11 +179,12 @@ def create_report(sufficient_items, insufficient_items, condition, output = ".",
     text += condition.target + ".\n"
     text += "Coverage: " + str(coverage) + condition.unit + "\n"
 
-    with open(output + "/" + condition.name + ".txt", "w") as f:
+    prefix = prefix + "_" if prefix is not None else ""
+    with open(output + "/" + prefix + condition.name + ".txt", "w") as f:
         f.write(text)
 
 
-def create_badge(sufficient_items, insufficient_items, condition, output = ".", thresholds = None, **kwargs):
+def create_badge(sufficient_items, insufficient_items, condition, output = ".", prefix = None, thresholds = None, **kwargs):
     """
         Create a badge with the fraction of symbols which did pass the condition.
 
@@ -143,8 +198,13 @@ def create_badge(sufficient_items, insufficient_items, condition, output = ".", 
     """
     n_all = len(sufficient_items) + len(insufficient_items)
 
+    if n_all == 0:
+        raise RuntimeError("No items were analyzed!")
+
     coverage = int(1000 * round(len(sufficient_items) / n_all, 3)) / 10.
 
     thresholds = condition.thresholds if thresholds is None else condition.thresholds
     badge = _submodules.anybadge.Badge(condition.name, coverage, value_suffix=condition.unit, thresholds=thresholds)
-    badge.write_badge(output + "/" + condition.name + ".svg", overwrite=True)
+
+    prefix = prefix + "_" if prefix is not None else ""
+    badge.write_badge(output + "/" + prefix + condition.name + ".svg", overwrite=True)
