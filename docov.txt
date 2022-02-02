@@ -1,3 +1,3 @@
 Found insufficient docstring for the following items:
-Found 8 items of which 8 have suffcient docstring.
+Found 10 items of which 10 have suffcient docstring.
 Coverage: 100.0%
