@@ -51,9 +51,18 @@ def main(args = None):
     module = _submodules.importlib.import_module(args.module)
     result = analyze(module, depth = args.depth, ignore = args.ignore)
 
+    sufficient_items, insufficient_items, condition = result
+    n_all = len(sufficient_items) + len(insufficient_items)
+    coverage = int(1000 * round(len(sufficient_items) / n_all, 3)) / 10.
+
+    print(coverage, condition.unit)
+
     if not args.no_badge:
-        create_badge(*result, output = args.output, prefix = args.prefix)
+        name, _badge = badge(*result, output = args.output, prefix = args.prefix)
+        _badge.write_badge(name, overwrite=True)
 
     if not args.no_report:
-        create_report(*result, output = args.output, prefix = args.prefix)
+        name, text = report(*result, output = args.output, prefix = args.prefix)
+        with open(name, "w") as f:
+            f.write(text)
 

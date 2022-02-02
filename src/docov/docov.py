@@ -150,7 +150,7 @@ def analyze(module, condition = SufficientDocstring(), **kwargs):
     return sufficient_items, insufficient_items, condition
 
 
-def create_report(sufficient_items, insufficient_items, condition, output = ".", prefix = None, **kwargs):
+def report(sufficient_items, insufficient_items, condition, output = ".", prefix = None, **kwargs):
     """
         Report the symbols which did not pass the condition.
 
@@ -180,11 +180,14 @@ def create_report(sufficient_items, insufficient_items, condition, output = ".",
     text += "Coverage: " + str(coverage) + condition.unit + "\n"
 
     prefix = prefix + "_" if prefix is not None else ""
-    with open(output + "/" + prefix + condition.name + ".txt", "w") as f:
-        f.write(text)
+
+    return output + "/" + prefix + condition.name + ".txt", text
+
+    #with open(output + "/" + prefix + condition.name + ".txt", "w") as f:
+    #    f.write(text)
 
 
-def create_badge(sufficient_items, insufficient_items, condition, output = ".", prefix = None, thresholds = None, **kwargs):
+def badge(sufficient_items, insufficient_items, condition, output = ".", prefix = None, thresholds = None, **kwargs):
     """
         Create a badge with the fraction of symbols which did pass the condition.
 
@@ -207,4 +210,7 @@ def create_badge(sufficient_items, insufficient_items, condition, output = ".", 
     badge = _submodules.anybadge.Badge(condition.name, coverage, value_suffix=condition.unit, thresholds=thresholds)
 
     prefix = prefix + "_" if prefix is not None else ""
-    badge.write_badge(output + "/" + prefix + condition.name + ".svg", overwrite=True)
+
+    return output + "/" + prefix + condition.name + ".svg", badge
+
+    #badge.write_badge(output + "/" + prefix + condition.name + ".svg", overwrite=True)
