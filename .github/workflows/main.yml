@@ -19,13 +19,14 @@ jobs:
         run: python3 -m pip install .
         
       - name: Analyze docstring coverage of docov
-        run: docov docov --output .docov/
+        run: docov docov --output .github/workflows/.docov/
+        
       - name: Print docov report
-        run: cat .docov/docov.txt
+        run: cat .github/workflows/.docov/docov.txt
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.2.2
         with:
           branch: gh-pages
-          folder: .docov
+          folder: .github/workflows/.docov
         
